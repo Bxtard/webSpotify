@@ -4,52 +4,102 @@ import styled from 'styled-components'
 import { useRouter } from 'next/navigation'
 import { SpotifyArtist } from '../../types/spotify'
 import { LoadingSkeleton } from '../ui/LoadingSkeleton'
+import { animationMixins, prefersReducedMotion } from '../../utils/animations'
+import { useAnimationPerformance } from '../../hooks/useAnimationPerformance'
 
 interface ArtistCardProps {
   artist?: SpotifyArtist
   loading?: boolean
+  selected?: boolean
   onClick?: () => void
 }
 
-const CardContainer = styled.div`
+const CardContainer = styled.div<{ selected?: boolean }>`
   background-color: ${({ theme }) => theme.colors.surface};
-  border-radius: 12px;
-  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: ${({ theme }) => theme.spacing.md};
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  border: 1px solid transparent;
+  transition: background-color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut},
+              transform ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeOut},
+              box-shadow ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeOut},
+              border-color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut};
+  border: 2px solid ${({ selected, theme }) => selected ? theme.colors.borderActive : 'transparent'};
   position: relative;
   overflow: hidden;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  min-height: 280px;
+  width: 100%;
+  max-width: ${({ theme }) => theme.layout.cardWidth};
+  height: ${({ theme }) => theme.layout.cardHeight};
+  display: flex;
+  flex-direction: column;
+  will-change: transform, background-color, box-shadow;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    height: auto;
+    min-height: 200px;
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    padding: ${({ theme }) => theme.spacing.md};
-    min-height: 240px;
+    padding: ${({ theme }) => theme.spacing.sm};
   }
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.surfaceHover};
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    border-color: ${({ theme }) => theme.colors.primary}40;
+    background-color: ${({ theme }) => theme.colors.primary};
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(196, 255, 97, 0.2);
+  }
+
+  &:focus {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+    transition: outline-offset ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeOut};
   }
 
   &:active {
-    transform: translateY(0);
-    background-color: ${({ theme }) => theme.colors.surface};
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(0.98) translateY(0);
+    transition-duration: ${({ theme }) => theme.animation.duration.fast};
   }
 
+  /* Touch-friendly interactions for mobile devices */
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    min-height: 44px; /* Minimum touch target size */
+    
     &:hover {
-      transform: none;
+      background-color: ${({ theme }) => theme.colors.primary};
+      transform: scale(1.01) translateY(-1px);
     }
     
     &:active {
-      transform: scale(0.98);
-      background-color: ${({ theme }) => theme.colors.surfaceHover};
+      transform: scale(0.97) translateY(0);
+    }
+  }
+
+  /* Ensure consistent spacing and alignment */
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    &:hover {
+      background-color: ${({ theme }) => theme.colors.primary};
+      transform: scale(1.02) translateY(-2px);
+    }
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    transition: background-color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut},
+                border-color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut};
+    
+    &:hover {
+      transform: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    &:active {
+      transform: none;
     }
   }
 `
@@ -59,19 +109,30 @@ const ImageContainer = styled.div`
   width: 100%;
   aspect-ratio: 1;
   margin-bottom: ${({ theme }) => theme.spacing.md};
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.background};
+  flex-shrink: 0;
 `
 
 const ArtistImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.2s ease-in-out;
+  transition: transform ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeOut};
+  will-change: transform;
 
   ${CardContainer}:hover & {
-    transform: scale(1.05);
+    transform: scale(1.08);
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    
+    ${CardContainer}:hover & {
+      transform: none;
+    }
   }
 `
 
@@ -90,42 +151,42 @@ const ArtistInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xs};
+  flex-grow: 1;
+  justify-content: flex-start;
 `
 
 const ArtistName = styled.h3`
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.typography.fontSize.lg};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
+  font-size: ${({ theme }) => theme.typography.cardTitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.cardTitle.fontWeight};
+  line-height: ${({ theme }) => theme.typography.cardTitle.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.cardTitle.letterSpacing};
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut};
+
+  ${CardContainer}:hover & {
+    color: #000000;
+  }
 `
 
 const FollowersCount = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.normal};
+  font-size: ${({ theme }) => theme.typography.cardMeta.fontSize};
+  font-weight: ${({ theme }) => theme.typography.cardMeta.fontWeight};
+  line-height: ${({ theme }) => theme.typography.cardMeta.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.cardMeta.letterSpacing};
   margin: 0;
+  transition: color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut};
+
+  ${CardContainer}:hover & {
+    color: #000000;
+  }
 `
 
-const GenresList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing.xs};
-  margin-top: ${({ theme }) => theme.spacing.xs};
-`
 
-const GenreTag = styled.span`
-  background-color: ${({ theme }) => theme.colors.primary}20;
-  color: ${({ theme }) => theme.colors.primary};
-  font-size: ${({ theme }) => theme.typography.fontSize.xs};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  padding: ${({ theme }) => theme.spacing.xxs} ${({ theme }) => theme.spacing.xs};
-  border-radius: 4px;
-  text-transform: capitalize;
-`
 
 const LoadingCard = styled.div`
   background-color: ${({ theme }) => theme.colors.surface};
@@ -150,16 +211,25 @@ const LoadingTextSkeleton = styled.div`
 
 export const ArtistCard: React.FC<ArtistCardProps> = ({ 
   artist, 
-  loading = false, 
+  loading = false,
+  selected = false,
   onClick 
 }) => {
   const router = useRouter()
+  const { elementRef, handleMouseEnter, handleMouseLeave } = useAnimationPerformance()
 
   const handleClick = () => {
     if (onClick) {
       onClick()
     } else if (artist) {
       router.push(`/artist/${artist.id}`)
+    }
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleClick()
     }
   }
 
@@ -183,11 +253,11 @@ export const ArtistCard: React.FC<ArtistCardProps> = ({
 
   const formatFollowers = (count: number): string => {
     if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M followers`
+      return `Followers: ${(count / 1000000).toFixed(1)}M`
     } else if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K followers`
+      return `Followers: ${(count / 1000).toFixed(1)}K`
     } else {
-      return `${count} followers`
+      return `Followers: ${count.toLocaleString()}`
     }
   }
 
@@ -207,16 +277,26 @@ export const ArtistCard: React.FC<ArtistCardProps> = ({
   }
 
   const imageUrl = getArtistImage()
-  const displayGenres = artist.genres.slice(0, 3) // Show max 3 genres
 
   return (
-    <CardContainer onClick={handleClick} role="button" tabIndex={0}>
+    <CardContainer 
+      ref={elementRef as React.RefObject<HTMLDivElement>}
+      onClick={handleClick} 
+      onKeyDown={handleKeyDown}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      role="button" 
+      tabIndex={0} 
+      selected={selected}
+      aria-label={`View ${artist.name} artist details`}
+    >
       <ImageContainer>
         {imageUrl ? (
           <ArtistImage 
             src={imageUrl} 
             alt={`${artist.name} artist image`}
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <PlaceholderImage>
@@ -233,16 +313,6 @@ export const ArtistCard: React.FC<ArtistCardProps> = ({
         <FollowersCount>
           {formatFollowers(artist.followers.total)}
         </FollowersCount>
-        
-        {displayGenres.length > 0 && (
-          <GenresList>
-            {displayGenres.map((genre, index) => (
-              <GenreTag key={index}>
-                {genre}
-              </GenreTag>
-            ))}
-          </GenresList>
-        )}
       </ArtistInfo>
     </CardContainer>
   )

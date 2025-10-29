@@ -1,15 +1,14 @@
 'use client'
 
 import styled, { css } from 'styled-components'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { animationMixins, prefersReducedMotion } from '../../utils/animations'
 
 export interface HeaderProps {
-  showSearch?: boolean
-  onSearch?: (query: string) => void
-  searchValue?: string
-  searchLoading?: boolean
+  currentPage?: 'search' | 'albums'
+  onLogout: () => void
 }
 
 const HeaderContainer = styled.header`
@@ -18,18 +17,17 @@ const HeaderContainer = styled.header`
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
-  background-color: ${({ theme }) => theme.colors.background}95;
+  height: ${({ theme }) => theme.layout.headerHeight};
 `
 
 const HeaderContent = styled.div`
-  max-width: 1280px;
+  max-width: ${({ theme }) => theme.layout.maxWidth};
   margin: 0 auto;
   padding: 0 ${({ theme }) => theme.spacing.md};
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 100%;
 
   @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
     padding: 0 ${({ theme }) => theme.spacing.lg};
@@ -38,26 +36,57 @@ const HeaderContent = styled.div`
   @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
     padding: 0 ${({ theme }) => theme.spacing.xl};
   }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.xl}) {
+    padding: 0 ${({ theme }) => theme.spacing['2xl']};
+  }
 `
 
 const Logo = styled(Link)`
   display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing.xs};
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.typography.fontSize.xl};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  font-size: ${({ theme }) => theme.typography.brand.fontSize};
+  font-weight: ${({ theme }) => theme.typography.brand.fontWeight};
+  letter-spacing: ${({ theme }) => theme.typography.brand.letterSpacing};
+  line-height: ${({ theme }) => theme.typography.brand.lineHeight};
   text-decoration: none;
-  transition: color 0.2s ease-in-out;
+  transition: color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut},
+              transform ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeOut};
+  will-change: transform, color;
 
   &:hover {
     color: ${({ theme }) => theme.colors.primary};
+    transform: scale(1.05);
   }
 
-  svg {
-    width: 32px;
-    height: 32px;
-    fill: ${({ theme }) => theme.colors.primary};
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+    border-radius: ${({ theme }) => theme.borderRadius.sm};
+    transition: outline-offset ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeOut};
+  }
+
+  /* Responsive font size adjustments */
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: 1.25rem; /* Slightly smaller on mobile */
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    transition: color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut};
+    
+    &:hover {
+      transform: none;
+    }
+    
+    &:active {
+      transform: none;
+    }
   }
 `
 
@@ -78,17 +107,34 @@ const Navigation = styled.nav`
 
 const NavLink = styled(Link)<{ $isActive?: boolean }>`
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  font-size: ${({ theme }) => theme.typography.nav.fontSize};
+  font-weight: ${({ theme }) => theme.typography.nav.fontWeight};
+  line-height: ${({ theme }) => theme.typography.nav.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.nav.letterSpacing};
   text-decoration: none;
-  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
-  border-radius: 6px;
-  transition: all 0.2s ease-in-out;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  transition: color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut},
+              background-color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut},
+              transform ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeOut};
   position: relative;
+  white-space: nowrap;
+  will-change: transform, background-color;
 
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
     background-color: ${({ theme }) => theme.colors.surfaceHover};
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+    transition: outline-offset ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeOut};
   }
 
   ${({ $isActive, theme }) =>
@@ -107,71 +153,90 @@ const NavLink = styled(Link)<{ $isActive?: boolean }>`
         height: 2px;
         background-color: ${theme.colors.primary};
         border-radius: 1px;
+        transition: width ${theme.animation.duration.normal} ${theme.animation.easing.easeOut};
+      }
+
+      &:hover::after {
+        width: 30px;
       }
     `}
+
+  /* Responsive adjustments */
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) and (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+    font-size: 0.9rem;
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    transition: color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut},
+                background-color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut};
+    
+    &:hover {
+      transform: none;
+    }
+    
+    &:active {
+      transform: none;
+    }
+  }
 `
 
-const SearchContainer = styled.div`
-  flex: 1;
-  max-width: 400px;
-  margin: 0 ${({ theme }) => theme.spacing.lg};
-  position: relative;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    display: none;
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
-    max-width: 500px;
-    margin: 0 ${({ theme }) => theme.spacing.xl};
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.xl}) {
-    max-width: 600px;
-    margin: 0 ${({ theme }) => theme.spacing['2xl']};
-  }
-`
-
-
-
-const SearchInput = styled.input`
-  width: 100%;
+const LogoutButton = styled.button`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.nav.fontSize};
+  font-weight: ${({ theme }) => theme.typography.nav.fontWeight};
+  line-height: ${({ theme }) => theme.typography.nav.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.nav.letterSpacing};
+  background: none;
+  border: none;
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  padding-left: 40px;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: 24px;
-  background-color: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-family: ${({ theme }) => theme.typography.fontFamily.primary};
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  transition: all 0.2s ease-in-out;
-  outline: none;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  cursor: pointer;
+  transition: color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut},
+              background-color ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut},
+              transform ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeOut};
+  white-space: nowrap;
+  will-change: transform, background-color;
 
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textMuted};
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    background-color: ${({ theme }) => theme.colors.surfaceHover};
+    transform: translateY(-1px);
   }
 
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.colors.primary}20;
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+    transition: outline-offset ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeOut};
+  }
+
+  /* Responsive adjustments */
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) and (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+    font-size: 0.9rem;
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    transition: color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut},
+                background-color ${({ theme }) => theme.animation.duration.fast} ${({ theme }) => theme.animation.easing.easeInOut};
+    
+    &:hover {
+      transform: none;
+    }
+    
+    &:active {
+      transform: none;
+    }
   }
 `
 
-const SearchIcon = styled.div`
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: ${({ theme }) => theme.colors.textMuted};
 
-  svg {
-    width: 100%;
-    height: 100%;
-    fill: currentColor;
-  }
-`
 
 const MobileMenuButton = styled.button`
   display: flex;
@@ -179,10 +244,12 @@ const MobileMenuButton = styled.button`
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
   background-color: transparent;
+  border: none;
   color: ${({ theme }) => theme.colors.textSecondary};
-  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut};
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 
@@ -194,6 +261,11 @@ const MobileMenuButton = styled.button`
   &:active {
     background-color: ${({ theme }) => theme.colors.surface};
     transform: scale(0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
@@ -218,8 +290,9 @@ const MobileMenu = styled.div<{ $isOpen: boolean }>`
   transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease-in-out;
+  transition: all ${({ theme }) => theme.animation.duration.slow} ${({ theme }) => theme.animation.easing.easeInOut};
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 50;
 
   ${({ $isOpen }) =>
     $isOpen &&
@@ -232,22 +305,27 @@ const MobileMenu = styled.div<{ $isOpen: boolean }>`
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
     display: none;
   }
+
+  /* Enhanced mobile responsiveness */
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.sm};
+  }
 `
 
 const MobileNavLink = styled(Link)<{ $isActive?: boolean }>`
-  display: block;
+  display: flex;
+  align-items: center;
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: ${({ theme }) => theme.typography.fontSize.lg};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
   text-decoration: none;
   padding: ${({ theme }) => theme.spacing.md} 0;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  transition: all 0.2s ease-in-out;
+  transition: all ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut};
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   min-height: 48px;
-  display: flex;
-  align-items: center;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
 
   &:last-child {
     border-bottom: none;
@@ -255,6 +333,10 @@ const MobileNavLink = styled(Link)<{ $isActive?: boolean }>`
 
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
+    background-color: ${({ theme }) => theme.colors.surfaceHover};
+    margin: 0 -${({ theme }) => theme.spacing.md};
+    padding-left: ${({ theme }) => theme.spacing.md};
+    padding-right: ${({ theme }) => theme.spacing.md};
   }
 
   &:active {
@@ -262,6 +344,12 @@ const MobileNavLink = styled(Link)<{ $isActive?: boolean }>`
     margin: 0 -${({ theme }) => theme.spacing.md};
     padding-left: ${({ theme }) => theme.spacing.md};
     padding-right: ${({ theme }) => theme.spacing.md};
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
   }
 
   ${({ $isActive, theme }) =>
@@ -269,68 +357,105 @@ const MobileNavLink = styled(Link)<{ $isActive?: boolean }>`
     css`
       color: ${theme.colors.primary};
       font-weight: ${theme.typography.fontWeight.semibold};
+      background-color: ${theme.colors.surface};
+      margin: 0 -${theme.spacing.md};
+      padding-left: ${theme.spacing.md};
+      padding-right: ${theme.spacing.md};
     `}
+
+  /* Enhanced touch targets for mobile */
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    min-height: 52px;
+    font-size: ${({ theme }) => theme.typography.fontSize.base};
+  }
+`
+
+const MobileLogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.fontSize.lg};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  background: none;
+  border: none;
+  padding: ${({ theme }) => theme.spacing.md} 0;
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut};
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 48px;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  text-align: left;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
+    background-color: ${({ theme }) => theme.colors.surfaceHover};
+    margin: 0 -${({ theme }) => theme.spacing.md};
+    padding-left: ${({ theme }) => theme.spacing.md};
+    padding-right: ${({ theme }) => theme.spacing.md};
+  }
+
+  &:active {
+    background-color: ${({ theme }) => theme.colors.surface};
+    margin: 0 -${({ theme }) => theme.spacing.md};
+    padding-left: ${({ theme }) => theme.spacing.md};
+    padding-right: ${({ theme }) => theme.spacing.md};
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary};
+    outline-offset: 2px;
+  }
+
+  /* Enhanced touch targets for mobile */
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    min-height: 52px;
+    font-size: ${({ theme }) => theme.typography.fontSize.base};
+  }
 `
 
 export const Header: React.FC<HeaderProps> = ({
-  showSearch = false,
-  onSearch,
-  searchValue = '',
-  searchLoading = false
+  currentPage,
+  onLogout
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState(searchValue)
   const pathname = usePathname()
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchQuery(value)
-    if (onSearch) {
-      onSearch(value)
-    }
-  }
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (onSearch && searchQuery.trim()) {
-      onSearch(searchQuery.trim())
-    }
-  }
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen)
   }
 
+  const handleMobileMenuClose = () => {
+    setMobileMenuOpen(false)
+  }
+
+  const handleLogout = () => {
+    onLogout()
+    setMobileMenuOpen(false)
+  }
+
   const isActive = (path: string) => pathname === path
+
+  // Close mobile menu on escape key
+  React.useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [mobileMenuOpen])
 
   return (
     <HeaderContainer>
       <HeaderContent>
         <Logo href="/">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-          </svg>
-          Spotify App
+          SPOTIFY APP
         </Logo>
-
-        {showSearch && (
-          <SearchContainer>
-            <form onSubmit={handleSearchSubmit}>
-              <SearchIcon>
-                <svg viewBox="0 0 24 24">
-                  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                </svg>
-              </SearchIcon>
-              <SearchInput
-                type="text"
-                placeholder="Buscar artistas..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                disabled={searchLoading}
-              />
-            </form>
-          </SearchContainer>
-        )}
 
         <Navigation>
           <NavLink href="/search" $isActive={isActive('/search')}>
@@ -339,6 +464,9 @@ export const Header: React.FC<HeaderProps> = ({
           <NavLink href="/albums" $isActive={isActive('/albums')}>
             Mis álbumes
           </NavLink>
+          <LogoutButton onClick={onLogout}>
+            Cerrar sesión
+          </LogoutButton>
         </Navigation>
 
         <MobileMenuButton onClick={toggleMobileMenu}>
@@ -352,17 +480,20 @@ export const Header: React.FC<HeaderProps> = ({
         <MobileNavLink 
           href="/search" 
           $isActive={isActive('/search')}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={handleMobileMenuClose}
         >
           Buscar
         </MobileNavLink>
         <MobileNavLink 
           href="/albums" 
           $isActive={isActive('/albums')}
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={handleMobileMenuClose}
         >
           Mis álbumes
         </MobileNavLink>
+        <MobileLogoutButton onClick={handleLogout}>
+          Cerrar sesión
+        </MobileLogoutButton>
       </MobileMenu>
     </HeaderContainer>
   )

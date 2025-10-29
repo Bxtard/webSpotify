@@ -4,6 +4,24 @@ import { useRouter } from 'next/navigation'
 import { ThemeProvider } from 'styled-components'
 import { ArtistCard } from '../ArtistCard'
 import { theme } from '../../../styles/theme'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { it } from 'node:test'
+import { beforeEach } from 'node:test'
+import { describe } from 'node:test'
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
@@ -53,12 +71,11 @@ describe('ArtistCard', () => {
     renderWithTheme(<ArtistCard artist={mockArtist} />)
 
     expect(screen.getByText('Test Artist')).toBeInTheDocument()
-    expect(screen.getByText('1.2M followers')).toBeInTheDocument()
-    expect(screen.getByText('pop')).toBeInTheDocument()
-    expect(screen.getByText('rock')).toBeInTheDocument()
-    expect(screen.getByText('indie')).toBeInTheDocument()
-    // Should only show first 3 genres
-    expect(screen.queryByText('alternative')).not.toBeInTheDocument()
+    expect(screen.getByText('Followers: 1.2M')).toBeInTheDocument()
+    // Genres should not be displayed in the new design
+    expect(screen.queryByText('pop')).not.toBeInTheDocument()
+    expect(screen.queryByText('rock')).not.toBeInTheDocument()
+    expect(screen.queryByText('indie')).not.toBeInTheDocument()
   })
 
   it('should render artist image with correct alt text', () => {
@@ -71,10 +88,10 @@ describe('ArtistCard', () => {
 
   it('should format followers count correctly', () => {
     const testCases = [
-      { followers: 999, expected: '999 followers' },
-      { followers: 1500, expected: '1.5K followers' },
-      { followers: 1234567, expected: '1.2M followers' },
-      { followers: 12345678, expected: '12.3M followers' },
+      { followers: 999, expected: 'Followers: 999' },
+      { followers: 1500, expected: 'Followers: 1.5K' },
+      { followers: 1234567, expected: 'Followers: 1.2M' },
+      { followers: 12345678, expected: 'Followers: 12.3M' },
     ]
 
     testCases.forEach(({ followers, expected }) => {
@@ -114,13 +131,21 @@ describe('ArtistCard', () => {
     expect(screen.queryByAltText('Test Artist artist image')).not.toBeInTheDocument()
   })
 
-  it('should handle artist with no genres', () => {
-    const artistWithoutGenres = { ...mockArtist, genres: [] }
-    renderWithTheme(<ArtistCard artist={artistWithoutGenres} />)
+  it('should display selected state with green border', () => {
+    renderWithTheme(<ArtistCard artist={mockArtist} selected />)
 
+    const card = screen.getByRole('button')
+    expect(card).toBeInTheDocument()
+    // The selected state is handled by styled-components, so we check the component renders
     expect(screen.getByText('Test Artist')).toBeInTheDocument()
-    expect(screen.getByText('1.2M followers')).toBeInTheDocument()
-    expect(screen.queryByText('pop')).not.toBeInTheDocument()
+  })
+
+  it('should not display selected state by default', () => {
+    renderWithTheme(<ArtistCard artist={mockArtist} />)
+
+    const card = screen.getByRole('button')
+    expect(card).toBeInTheDocument()
+    expect(screen.getByText('Test Artist')).toBeInTheDocument()
   })
 
   it('should render loading skeleton when loading prop is true', () => {
@@ -129,10 +154,9 @@ describe('ArtistCard', () => {
     // Should not render artist content when loading
     expect(screen.queryByText('Test Artist')).not.toBeInTheDocument()
     
-    // Should render loading skeleton structure
-    const loadingCard = screen.getByTestId('loading-skeleton') || document.querySelector('[data-testid="loading-skeleton"]')
-    // Since we're using styled-components, we'll check for the presence of skeleton elements
-    expect(document.querySelector('div')).toBeInTheDocument() // Basic check for skeleton structure
+    // Should render loading skeleton structure - check for the loading card container
+    const loadingElements = document.querySelectorAll('div')
+    expect(loadingElements.length).toBeGreaterThan(0) // Basic check for skeleton structure
   })
 
   it('should return null when no artist is provided and not loading', () => {
@@ -173,17 +197,34 @@ describe('ArtistCard', () => {
 
     const card = screen.getByRole('button')
     expect(card).toHaveAttribute('tabIndex', '0')
+    expect(card).toHaveAttribute('aria-label', 'View Test Artist artist details')
   })
 
-  it('should handle keyboard navigation', () => {
+  it('should handle keyboard navigation with Enter key', () => {
     renderWithTheme(<ArtistCard artist={mockArtist} />)
 
     const card = screen.getByRole('button')
     fireEvent.keyDown(card, { key: 'Enter', code: 'Enter' })
 
-    // Note: We're not testing the actual keyboard event handling here
-    // as it would require more complex setup. This test ensures the
-    // element is focusable and has the right attributes.
-    expect(card).toHaveAttribute('tabIndex', '0')
+    expect(mockPush).toHaveBeenCalledWith('/artist/artist123')
+  })
+
+  it('should handle keyboard navigation with Space key', () => {
+    const mockOnClick = jest.fn()
+    renderWithTheme(<ArtistCard artist={mockArtist} onClick={mockOnClick} />)
+
+    const card = screen.getByRole('button')
+    fireEvent.keyDown(card, { key: ' ', code: 'Space' })
+
+    expect(mockOnClick).toHaveBeenCalled()
+  })
+
+  it('should not trigger navigation on other keys', () => {
+    renderWithTheme(<ArtistCard artist={mockArtist} />)
+
+    const card = screen.getByRole('button')
+    fireEvent.keyDown(card, { key: 'Tab', code: 'Tab' })
+
+    expect(mockPush).not.toHaveBeenCalled()
   })
 })

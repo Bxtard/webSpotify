@@ -12,34 +12,33 @@ interface ArtistListProps {
 
 const GridContainer = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.md};
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) and (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
-  }
+  gap: ${({ theme }) => theme.layout.gridGap};
+  width: 100%;
+  
+  /* Mobile: 2 columns */
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${({ theme }) => theme.grid.mobile.gap};
+  padding: 0 ${({ theme }) => theme.grid.mobile.padding};
 
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: ${({ theme }) => theme.spacing.xl};
+    /* Tablet: 3 columns */
+    grid-template-columns: repeat(3, 1fr);
+    gap: ${({ theme }) => theme.grid.tablet.gap};
+    padding: 0 ${({ theme }) => theme.grid.tablet.padding};
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: ${({ theme }) => theme.spacing.xl};
+    /* Desktop: 4 columns */
+    grid-template-columns: repeat(4, 1fr);
+    gap: ${({ theme }) => theme.grid.desktop.gap};
+    padding: 0 ${({ theme }) => theme.grid.desktop.padding};
   }
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.xl}) {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: ${({ theme }) => theme.spacing.xl};
+  /* Ensure cards maintain consistent sizing */
+  & > * {
+    width: 100%;
+    max-width: ${({ theme }) => theme.layout.cardWidth};
+    justify-self: center;
   }
 `
 
@@ -55,7 +54,7 @@ export const ArtistList: React.FC<ArtistListProps> = ({
   if (loading) {
     return (
       <LoadingGrid>
-        {Array.from({ length: 8 }).map((_, index) => (
+        {Array.from({ length: 4 }).map((_, index) => (
           <ArtistCard key={`loading-${index}`} loading />
         ))}
       </LoadingGrid>

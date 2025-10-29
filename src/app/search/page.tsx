@@ -4,31 +4,69 @@ import styled from 'styled-components'
 
 import { Layout } from '../../components/common/Layout'
 import { AuthWrapper } from '../../components/auth/AuthWrapper'
-import { Input } from '../../components/ui/Input'
+import { SearchInput } from '../../components/ui/SearchInput'
 import { ArtistList } from '../../components/artist/ArtistList'
+import { Pagination } from '../../components/ui/Pagination'
 import { useSpotifySearch } from '../../hooks/useSpotifySearch'
 import { useOnlineStatus } from '../../hooks/useOnlineStatus'
 import { PageErrorBoundary } from '../../components/ui/ErrorBoundary'
 
+// SPOTIFY APP centered layout container
 const SearchContainer = styled.div`
   width: 100%;
+  max-width: ${({ theme }) => theme.layout.contentWidth};
+  margin: 0 auto;
+  padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.md};
+  text-align: center;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
+    padding: ${({ theme }) => theme.spacing['2xl']} ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+    padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.xl};
+  }
 `
 
 const SearchHeader = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
 `
 
-const Title = styled.h1`
+// Hero title using SPOTIFY APP design system
+const HeroTitle = styled.h1`
+  font-size: ${({ theme }) => theme.typography.hero.fontSize};
+  font-weight: ${({ theme }) => theme.typography.hero.fontWeight};
+  line-height: ${({ theme }) => theme.typography.hero.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.hero.letterSpacing};
   color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.typography.fontSize['3xl']};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-  margin-bottom: ${({ theme }) => theme.spacing.md};
-  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: 2rem;
+  }
+`
+
+// Subtitle using SPOTIFY APP design system
+const Subtitle = styled.p`
+  font-size: ${({ theme }) => theme.typography.subtitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.subtitle.fontWeight};
+  line-height: ${({ theme }) => theme.typography.subtitle.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.subtitle.letterSpacing};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 `
 
 const SearchInputContainer = styled.div`
-  max-width: 600px;
+  max-width: ${({ theme }) => theme.layout.searchMaxWidth};
   width: 100%;
+  margin: 0 auto ${({ theme }) => theme.spacing.xl} auto;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     max-width: 100%;
@@ -37,6 +75,22 @@ const SearchInputContainer = styled.div`
 
 const ResultsContainer = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xl};
+  text-align: left;
+`
+
+// Results counter styled with subtitle typography
+const ResultsCounter = styled.div`
+  font-size: ${({ theme }) => theme.typography.subtitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.subtitle.fontWeight};
+  line-height: ${({ theme }) => theme.typography.subtitle.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.subtitle.letterSpacing};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  text-align: center;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    text-align: left;
+  }
 `
 
 
@@ -142,7 +196,19 @@ const OfflineText = styled.p`
 
 
 function SearchPageContent() {
-  const { query, results, loading, error, hasSearched, setQuery, retry } = useSpotifySearch()
+  const {
+    query,
+    results,
+    loading,
+    error,
+    hasSearched,
+    totalResults,
+    currentPage,
+    totalPages,
+    setQuery,
+    setPage,
+    retry
+  } = useSpotifySearch(500, 4)
   const isOnline = useOnlineStatus()
 
   const handleSearch = (searchQuery: string) => {
@@ -199,7 +265,19 @@ function SearchPageContent() {
       )
     }
 
-    return <ArtistList artists={results} loading={loading} />
+    return (
+      <>
+        <ArtistList artists={results} loading={loading} />
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            disabled={loading}
+          />
+        )}
+      </>
+    )
   }
 
   return (
@@ -207,20 +285,31 @@ function SearchPageContent() {
       <Layout showSearch onSearch={handleSearch} searchValue={query} searchLoading={loading}>
         <SearchContainer>
           <SearchHeader>
-            <Title>Search Artists</Title>
-            <SearchInputContainer>
-              <Input
-                type="search"
-                placeholder="Search for artists..."
-                value={query}
-                onChange={setQuery}
-                loading={loading}
-                fullWidth
-              />
-            </SearchInputContainer>
+            <HeroTitle>
+              Busca tus{' '}
+              <span style={{ color: '#C4FF61' }}>artistas</span>
+            </HeroTitle>
+            <Subtitle>
+              Encuentra tus artistas favoritos gracias a nuestro buscador y guarda tus álbumes favoritos
+            </Subtitle>
           </SearchHeader>
 
+          <SearchInputContainer>
+            <SearchInput
+              placeholder="Search for artists..."
+              value={query}
+              onChange={setQuery}
+              onSubmit={() => { }} // Search is handled automatically by debounced hook
+              loading={loading}
+            />
+          </SearchInputContainer>
+
           <ResultsContainer>
+            {hasSearched && results.length > 0 && !loading && (
+              <ResultsCounter>
+                Mostrando {results.length} resultados de {totalResults.toLocaleString()} resultados
+              </ResultsCounter>
+            )}
             {renderContent()}
           </ResultsContainer>
         </SearchContainer>

@@ -3,6 +3,7 @@
 import styled from 'styled-components'
 import React from 'react'
 import { Header } from './Header'
+import { authApi } from '../../api/auth'
 
 export interface LayoutProps {
   children: React.ReactNode
@@ -114,6 +115,10 @@ export const Layout: React.FC<LayoutProps> = ({
   className,
   ...props
 }) => {
+  const handleLogout = () => {
+    authApi.logout()
+  }
+
   return (
     <LayoutContainer className={className} {...props}>
       <Header
@@ -121,6 +126,7 @@ export const Layout: React.FC<LayoutProps> = ({
         onSearch={onSearch}
         searchValue={searchValue}
         searchLoading={searchLoading}
+        onLogout={handleLogout}
       />
       
       <MainContent>

@@ -9,18 +9,36 @@ import { Button } from '../ui/Button'
 
 const Container = styled.div`
   width: 100%;
+  max-width: ${({ theme }) => theme.layout.maxWidth};
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
+    padding: 0 ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+    padding: 0 ${({ theme }) => theme.spacing.xl};
+  }
 `
 
 const Header = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing['3xl']};
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing.xl} 0;
 `
 
 const Title = styled.h1`
-  font-size: ${({ theme }) => theme.typography.fontSize['3xl']};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  font-size: ${({ theme }) => theme.typography.hero.fontSize};
+  font-weight: ${({ theme }) => theme.typography.hero.fontWeight};
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin: 0 0 ${({ theme }) => theme.spacing.sm} 0;
-  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
+  margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+  line-height: ${({ theme }) => theme.typography.hero.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.hero.letterSpacing};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    font-size: ${({ theme }) => theme.typography.fontSize['3xl']};
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
@@ -28,10 +46,12 @@ const Title = styled.h1`
 `
 
 const Subtitle = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSize.lg};
+  font-size: ${({ theme }) => theme.typography.subtitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.subtitle.fontWeight};
   color: ${({ theme }) => theme.colors.textSecondary};
   margin: 0;
-  line-height: ${({ theme }) => theme.typography.lineHeight.normal};
+  line-height: ${({ theme }) => theme.typography.subtitle.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.subtitle.letterSpacing};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: ${({ theme }) => theme.typography.fontSize.base};
@@ -41,19 +61,24 @@ const Subtitle = styled.p`
 const ErrorContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.error};
-  border-radius: 12px;
-  padding: ${({ theme }) => theme.spacing.lg};
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  padding: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing['3xl']};
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.md};
+  gap: ${({ theme }) => theme.spacing.lg};
   align-items: center;
   text-align: center;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 `
 
 const ErrorText = styled.p`
   color: ${({ theme }) => theme.colors.error};
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
+  font-size: ${({ theme }) => theme.typography.subtitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.subtitle.fontWeight};
+  line-height: ${({ theme }) => theme.typography.subtitle.lineHeight};
   margin: 0;
 `
 
@@ -63,16 +88,18 @@ const EmptyState = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme }) => theme.spacing['3xl']} ${({ theme }) => theme.spacing.xl};
   background-color: ${({ theme }) => theme.colors.surface};
-  border-radius: 16px;
+  border-radius: ${({ theme }) => theme.borderRadius.xl};
   border: 2px dashed ${({ theme }) => theme.colors.border};
+  max-width: 600px;
+  margin: 0 auto;
 `
 
 const EmptyStateIcon = styled.div`
-  width: 80px;
-  height: 80px;
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  width: 120px;
+  height: 120px;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
   color: ${({ theme }) => theme.colors.textMuted};
   
   svg {
@@ -83,22 +110,24 @@ const EmptyStateIcon = styled.div`
 `
 
 const EmptyStateTitle = styled.h2`
-  font-size: ${({ theme }) => theme.typography.fontSize.xl};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin: 0 0 ${({ theme }) => theme.spacing.sm} 0;
+  margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
 `
 
 const EmptyStateText = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
+  font-size: ${({ theme }) => theme.typography.subtitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.subtitle.fontWeight};
   color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0 0 ${({ theme }) => theme.spacing.lg} 0;
-  max-width: 400px;
-  line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
+  margin: 0 0 ${({ theme }) => theme.spacing.xl} 0;
+  max-width: 450px;
+  line-height: ${({ theme }) => theme.typography.subtitle.lineHeight};
 `
 
 const ArtistSection = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
+  margin-bottom: ${({ theme }) => theme.spacing['3xl']};
 
   &:last-child {
     margin-bottom: 0;
@@ -106,43 +135,39 @@ const ArtistSection = styled.div`
 `
 
 const ArtistHeader = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
-  padding-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  padding-bottom: ${({ theme }) => theme.spacing.md};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `
 
 const ArtistName = styled.h2`
-  font-size: ${({ theme }) => theme.typography.fontSize.xl};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin: 0;
   line-height: ${({ theme }) => theme.typography.lineHeight.tight};
 `
 
 const AlbumCount = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-left: ${({ theme }) => theme.spacing.sm};
+  font-size: ${({ theme }) => theme.typography.cardMeta.fontSize};
+  font-weight: ${({ theme }) => theme.typography.cardMeta.fontWeight};
+  color: ${({ theme }) => theme.colors.primary};
+  margin-left: ${({ theme }) => theme.spacing.md};
 `
 
 const AlbumsGrid = styled.div`
   display: grid;
-  gap: ${({ theme }) => theme.spacing.lg};
-  grid-template-columns: 1fr;
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
-  }
+  gap: ${({ theme }) => theme.grid.mobile.gap};
+  grid-template-columns: repeat(${({ theme }) => theme.grid.mobile.columns}, 1fr);
 
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
+    gap: ${({ theme }) => theme.grid.tablet.gap};
+    grid-template-columns: repeat(${({ theme }) => theme.grid.tablet.columns}, 1fr);
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(4, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
+    gap: ${({ theme }) => theme.grid.desktop.gap};
+    grid-template-columns: repeat(${({ theme }) => theme.grid.desktop.columns}, 1fr);
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.xl}) {
@@ -152,13 +177,15 @@ const AlbumsGrid = styled.div`
 `
 
 const LoadingGrid = styled(AlbumsGrid)`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: ${({ theme }) => theme.spacing['3xl']};
 `
 
 const LoadMoreContainer = styled.div`
   display: flex;
   justify-content: center;
-  margin-top: ${({ theme }) => theme.spacing.xl};
+  margin-top: ${({ theme }) => theme.spacing['3xl']};
+  padding-top: ${({ theme }) => theme.spacing.xl};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `
 
 const RetryButton = styled(Button)`
@@ -205,7 +232,10 @@ export const SavedAlbums: React.FC = () => {
     return (
       <Container>
         <Header>
-          <Title>Mis álbumes</Title>
+          <Title>
+            Mis albumes{' '}
+            <span style={{ color: '#C4FF61' }}>guardados</span>
+          </Title>
           <Subtitle>Cargando tus álbumes guardados...</Subtitle>
         </Header>
         <LoadingGrid>
@@ -222,10 +252,16 @@ export const SavedAlbums: React.FC = () => {
     return (
       <Container>
         <Header>
-          <Title>Mis álbumes</Title>
-          <Subtitle>Tu colección de música</Subtitle>
+          <Title>
+            Mis álbumes<br />
+            <span style={{ color: '#C4FF61' }}>guardados</span>
+          </Title>
+          <Subtitle>
+            Disfruta de tu música a un solo click y descubre que<br />
+            discos has guardado dentro de "mis álbumes"
+          </Subtitle>
         </Header>
-        
+
         {error && (
           <ErrorContainer>
             <ErrorText>{error}</ErrorText>
@@ -234,7 +270,7 @@ export const SavedAlbums: React.FC = () => {
             </RetryButton>
           </ErrorContainer>
         )}
-        
+
         <EmptyState>
           <EmptyStateIcon>
             <svg viewBox="0 0 24 24">
@@ -258,9 +294,13 @@ export const SavedAlbums: React.FC = () => {
   return (
     <Container>
       <Header>
-        <Title>Mis álbumes</Title>
+        <Title>
+          Mis álbumes<br />
+          <span style={{ color: '#C4FF61' }}>guardados</span>
+        </Title>
         <Subtitle>
-          {savedAlbums.length} {savedAlbums.length === 1 ? 'álbum' : 'álbumes'} de {artistNames.length} {artistNames.length === 1 ? 'artista' : 'artistas'}
+          Disfruta de tu música a un solo click y descubre que<br />
+          discos has guardado dentro de "mis álbumes"
         </Subtitle>
       </Header>
 
@@ -291,7 +331,7 @@ export const SavedAlbums: React.FC = () => {
                   key={album.id}
                   album={album}
                   isSaved={true}
-                  onSave={async () => {}} // Not used since isSaved is true
+                  onSave={async () => { }} // Not used since isSaved is true
                   onRemove={handleRemoveAlbum}
                   loading={removingAlbums.has(album.id)}
                 />

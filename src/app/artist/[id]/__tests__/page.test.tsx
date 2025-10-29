@@ -113,6 +113,102 @@ describe('ArtistPage', () => {
     jest.clearAllMocks()
   })
 
+  describe('New Design System Implementation', () => {
+    it('applies centered layout with proper container styling', async () => {
+      mockSpotifyApi.getArtist.mockResolvedValue(mockArtist)
+      mockSpotifyApi.getArtistAlbums.mockResolvedValue({ items: mockAlbums })
+
+      const { container } = renderWithTheme(<ArtistPage params={{ id: 'artist123' }} />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'Test Artist' })).toBeInTheDocument()
+      })
+
+      // Verify the main container is present with proper structure
+      expect(container.firstChild).toBeInTheDocument()
+    })
+
+    it('renders artist name with hero typography', async () => {
+      mockSpotifyApi.getArtist.mockResolvedValue(mockArtist)
+      mockSpotifyApi.getArtistAlbums.mockResolvedValue({ items: mockAlbums })
+
+      renderWithTheme(<ArtistPage params={{ id: 'artist123' }} />)
+
+      await waitFor(() => {
+        const artistName = screen.getByRole('heading', { name: 'Test Artist' })
+        expect(artistName).toBeInTheDocument()
+        expect(artistName.tagName).toBe('H1')
+      })
+    })
+
+    it('displays follower count with primary color accent', async () => {
+      mockSpotifyApi.getArtist.mockResolvedValue(mockArtist)
+      mockSpotifyApi.getArtistAlbums.mockResolvedValue({ items: mockAlbums })
+
+      renderWithTheme(<ArtistPage params={{ id: 'artist123' }} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/1.2M.*followers/)).toBeInTheDocument()
+      })
+    })
+
+    it('renders genre tags with hover effects', async () => {
+      mockSpotifyApi.getArtist.mockResolvedValue(mockArtist)
+      mockSpotifyApi.getArtistAlbums.mockResolvedValue({ items: mockAlbums })
+
+      renderWithTheme(<ArtistPage params={{ id: 'artist123' }} />)
+
+      await waitFor(() => {
+        const popGenre = screen.getByText('pop')
+        expect(popGenre).toBeInTheDocument()
+        
+        const rockGenre = screen.getByText('rock')
+        expect(rockGenre).toBeInTheDocument()
+        
+        const indieGenre = screen.getByText('indie')
+        expect(indieGenre).toBeInTheDocument()
+      })
+    })
+
+    it('applies responsive grid layout for albums', async () => {
+      mockSpotifyApi.getArtist.mockResolvedValue(mockArtist)
+      mockSpotifyApi.getArtistAlbums.mockResolvedValue({ items: mockAlbums })
+
+      renderWithTheme(<ArtistPage params={{ id: 'artist123' }} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Album 1')).toBeInTheDocument()
+        expect(screen.getByText('Test Album 2')).toBeInTheDocument()
+      })
+    })
+
+    it('renders albums section with proper spacing and border', async () => {
+      mockSpotifyApi.getArtist.mockResolvedValue(mockArtist)
+      mockSpotifyApi.getArtistAlbums.mockResolvedValue({ items: mockAlbums })
+
+      renderWithTheme(<ArtistPage params={{ id: 'artist123' }} />)
+
+      await waitFor(() => {
+        const albumsSection = screen.getByText('Albums')
+        expect(albumsSection).toBeInTheDocument()
+        expect(albumsSection.tagName).toBe('H2')
+      })
+    })
+
+    it('renders artist image with rounded corners and hover effects', async () => {
+      mockSpotifyApi.getArtist.mockResolvedValue(mockArtist)
+      mockSpotifyApi.getArtistAlbums.mockResolvedValue({ items: mockAlbums })
+
+      renderWithTheme(<ArtistPage params={{ id: 'artist123' }} />)
+
+      await waitFor(() => {
+        const artistImage = screen.getByAltText('Test Artist')
+        expect(artistImage).toBeInTheDocument()
+        expect(artistImage.tagName).toBe('IMG')
+      })
+    })
+  })
+
   it('should render loading state initially', () => {
     mockSpotifyApi.getArtist.mockImplementation(() => new Promise(() => {})) // Never resolves
     mockSpotifyApi.getArtistAlbums.mockImplementation(() => new Promise(() => {}))

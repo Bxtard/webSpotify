@@ -17,14 +17,15 @@ const CardContainer = styled.div.withConfig({
   shouldForwardProp: (prop) => !['loading'].includes(prop),
 })<{ loading?: boolean }>`
   background-color: ${({ theme }) => theme.colors.surface};
-  border-radius: 12px;
+  border-radius: ${({ theme }) => theme.borderRadius.md};
   padding: ${({ theme }) => theme.spacing.md};
-  transition: all 0.2s ease-in-out;
-  border: 1px solid transparent;
+  transition: all ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeOut};
+  border: 2px solid transparent;
   position: relative;
   overflow: hidden;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  will-change: transform, box-shadow;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     padding: ${({ theme }) => theme.spacing.sm};
@@ -32,11 +33,22 @@ const CardContainer = styled.div.withConfig({
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.surfaceHover};
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transform: scale(1.02) translateZ(0);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  &:not(:hover) {
+    will-change: auto;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    &:hover {
+      transform: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
     &:hover {
       transform: none;
     }
@@ -54,9 +66,9 @@ const ImageContainer = styled.div`
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
   overflow: hidden;
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
   background-color: ${({ theme }) => theme.colors.surfaceHover};
 `
 
@@ -64,10 +76,16 @@ const AlbumImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.2s ease-in-out;
+  transition: transform ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeOut};
 
   ${CardContainer}:hover & {
-    transform: scale(1.05);
+    transform: scale(1.05) translateZ(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ${CardContainer}:hover & {
+      transform: none;
+    }
   }
 `
 
@@ -94,22 +112,24 @@ const CardContent = styled.div`
 `
 
 const AlbumTitle = styled.h3`
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  font-size: ${({ theme }) => theme.typography.cardTitle.fontSize};
+  font-weight: ${({ theme }) => theme.typography.cardTitle.fontWeight};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin: 0;
-  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
+  line-height: ${({ theme }) => theme.typography.cardTitle.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.cardTitle.letterSpacing};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 `
 
 const AlbumArtists = styled.p`
-  font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.normal};
+  font-size: ${({ theme }) => theme.typography.cardMeta.fontSize};
+  font-weight: ${({ theme }) => theme.typography.cardMeta.fontWeight};
   color: ${({ theme }) => theme.colors.textSecondary};
   margin: 0;
-  line-height: ${({ theme }) => theme.typography.lineHeight.normal};
+  line-height: ${({ theme }) => theme.typography.cardMeta.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.cardMeta.letterSpacing};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -144,9 +164,11 @@ const CardActions = styled.div`
 const ActionButton = styled(Button)`
   flex: 1;
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
   min-height: 44px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: ${({ theme }) => theme.typography.fontSize.base};

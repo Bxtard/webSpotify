@@ -155,13 +155,14 @@ const apiClient = createSpotifyApiClient()
 // Spotify API service methods
 export const spotifyApi = {
   // Search for artists
-  search: async (query: string, limit: number = 20): Promise<SpotifySearchResponse> => {
+  search: async (query: string, limit: number = 20, offset: number = 0): Promise<SpotifySearchResponse> => {
     return withRetry(async () => {
       const response = await apiClient.get('/search', {
         params: {
           q: query,
           type: 'artist',
           limit,
+          offset,
         },
       })
       return response.data
@@ -236,8 +237,8 @@ export const spotifyApi = {
   },
 
   // Search for artists (alias for search method)
-  searchArtists: async (query: string, limit: number = 20): Promise<SpotifySearchResponse> => {
-    return spotifyApi.search(query, limit)
+  searchArtists: async (query: string, limit: number = 20, offset: number = 0): Promise<SpotifySearchResponse> => {
+    return spotifyApi.search(query, limit, offset)
   },
 
   // Check if albums are saved (alias for checkSavedAlbums)

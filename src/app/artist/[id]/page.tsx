@@ -22,59 +22,90 @@ interface ArtistPageProps {
 
 const Container = styled.div`
   width: 100%;
+  max-width: ${({ theme }) => theme.layout.maxWidth};
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) {
+    padding: 0 ${({ theme }) => theme.spacing.lg};
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+    padding: 0 ${({ theme }) => theme.spacing.xl};
+  }
 `
 
 const BackButton = styled(Button)`
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
   align-self: flex-start;
+  font-size: ${({ theme }) => theme.typography.nav.fontSize};
+  font-weight: ${({ theme }) => theme.typography.nav.fontWeight};
 `
 
 const ArtistHeader = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing.xl};
-  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
+  margin-bottom: ${({ theme }) => theme.spacing['3xl']};
   align-items: flex-end;
+  padding: ${({ theme }) => theme.spacing.xl} 0;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: ${({ theme }) => theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing.xl};
+    padding: ${({ theme }) => theme.spacing.lg} 0;
   }
 `
 
 const ArtistImage = styled.img`
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
+  width: 240px;
+  height: 240px;
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
   object-fit: cover;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  transition: transform ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeOut};
+
+  &:hover {
+    transform: scale(1.02);
+  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    height: 200px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    width: 180px;
+    height: 180px;
   }
 `
 
 const ArtistImagePlaceholder = styled.div`
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
+  width: 240px;
+  height: 240px;
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
   background-color: ${({ theme }) => theme.colors.surface};
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${({ theme }) => theme.colors.textMuted};
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid ${({ theme }) => theme.colors.border};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    height: 200px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    width: 180px;
+    height: 180px;
   }
 
   svg {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     fill: currentColor;
   }
 `
@@ -87,29 +118,37 @@ const ArtistInfo = styled.div`
 `
 
 const ArtistName = styled.h1`
-  font-size: ${({ theme }) => theme.typography.fontSize['4xl']};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  font-size: ${({ theme }) => theme.typography.hero.fontSize};
+  font-weight: ${({ theme }) => theme.typography.hero.fontWeight};
   color: ${({ theme }) => theme.colors.textPrimary};
   margin: 0;
-  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
+  line-height: ${({ theme }) => theme.typography.hero.lineHeight};
+  letter-spacing: ${({ theme }) => theme.typography.hero.letterSpacing};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     font-size: ${({ theme }) => theme.typography.fontSize['3xl']};
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
   }
 `
 
 const ArtistStats = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.xs};
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacing.md};
 `
 
 const StatItem = styled.span`
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
+  font-size: ${({ theme }) => theme.typography.cardMeta.fontSize};
+  font-weight: ${({ theme }) => theme.typography.cardMeta.fontWeight};
   color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: ${({ theme }) => theme.typography.cardMeta.lineHeight};
   
   strong {
-    color: ${({ theme }) => theme.colors.textPrimary};
+    color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
   }
 `
@@ -124,52 +163,49 @@ const GenreList = styled.div`
 const GenreTag = styled.span`
   background-color: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.textSecondary};
-  padding: ${({ theme }) => theme.spacing.xxs} ${({ theme }) => theme.spacing.sm};
-  border-radius: 16px;
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.borderRadius.full};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
   border: 1px solid ${({ theme }) => theme.colors.border};
+  transition: all ${({ theme }) => theme.animation.duration.normal} ${({ theme }) => theme.animation.easing.easeInOut};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `
 
 const AlbumsSection = styled.section`
-  margin-top: ${({ theme }) => theme.spacing['2xl']};
+  margin-top: ${({ theme }) => theme.spacing['3xl']};
+  padding-top: ${({ theme }) => theme.spacing.xl};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `
 
 const SectionTitle = styled.h2`
   font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
-  margin: 0 0 ${({ theme }) => theme.spacing.lg} 0;
+  margin: 0 0 ${({ theme }) => theme.spacing.xl} 0;
+  line-height: ${({ theme }) => theme.typography.lineHeight.tight};
 `
 
 const AlbumsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.grid.mobile.gap};
+  grid-template-columns: repeat(${({ theme }) => theme.grid.mobile.columns}, 1fr);
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-    max-width: 300px;
-    margin: 0 auto;
-    gap: ${({ theme }) => theme.spacing.md};
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) and (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) and (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    gap: ${({ theme }) => theme.grid.tablet.gap};
+    grid-template-columns: repeat(${({ theme }) => theme.grid.tablet.columns}, 1fr);
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: ${({ theme }) => theme.spacing.xl};
+    gap: ${({ theme }) => theme.grid.desktop.gap};
+    grid-template-columns: repeat(${({ theme }) => theme.grid.desktop.columns}, 1fr);
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.xl}) {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: ${({ theme }) => theme.spacing.xl};
   }
 `
@@ -177,29 +213,36 @@ const AlbumsGrid = styled.div`
 const ErrorMessage = styled.div`
   background-color: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.error};
-  border-radius: 8px;
-  padding: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  padding: ${({ theme }) => theme.spacing.xl};
   text-align: center;
   color: ${({ theme }) => theme.colors.textPrimary};
   margin: ${({ theme }) => theme.spacing.xl} 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 
   h3 {
     color: ${({ theme }) => theme.colors.error};
-    margin: 0 0 ${({ theme }) => theme.spacing.sm} 0;
+    margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+    font-size: ${({ theme }) => theme.typography.fontSize.xl};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
   }
 
   p {
-    margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+    margin: 0 0 ${({ theme }) => theme.spacing.lg} 0;
     color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: ${({ theme }) => theme.typography.subtitle.fontSize};
+    line-height: ${({ theme }) => theme.typography.subtitle.lineHeight};
   }
 `
 
 const AlbumErrorMessage = styled.div`
   background-color: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.error};
-  border-radius: 8px;
-  padding: ${({ theme }) => theme.spacing.md};
-  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -207,7 +250,8 @@ const AlbumErrorMessage = styled.div`
 
   span {
     color: ${({ theme }) => theme.colors.error};
-    font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    font-size: ${({ theme }) => theme.typography.cardMeta.fontSize};
+    font-weight: ${({ theme }) => theme.typography.cardMeta.fontWeight};
   }
 `
 
@@ -246,33 +290,21 @@ const HeaderSkeleton = styled.div`
 
 const AlbumsSkeleton = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
+  gap: ${({ theme }) => theme.grid.mobile.gap};
+  grid-template-columns: repeat(${({ theme }) => theme.grid.mobile.columns}, 1fr);
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    grid-template-columns: 1fr;
-    max-width: 300px;
-    margin: 0 auto;
-    gap: ${({ theme }) => theme.spacing.md};
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.sm}) and (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
-  }
-
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) and (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    gap: ${({ theme }) => theme.grid.tablet.gap};
+    grid-template-columns: repeat(${({ theme }) => theme.grid.tablet.columns}, 1fr);
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: ${({ theme }) => theme.spacing.xl};
+    gap: ${({ theme }) => theme.grid.desktop.gap};
+    grid-template-columns: repeat(${({ theme }) => theme.grid.desktop.columns}, 1fr);
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.xl}) {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: ${({ theme }) => theme.spacing.xl};
   }
 `

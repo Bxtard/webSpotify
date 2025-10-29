@@ -2,10 +2,11 @@
 
 import styled, { keyframes } from 'styled-components'
 import React from 'react'
+import { prefersReducedMotion } from '../../utils/animations'
 
 export interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
-  color?: string
+  variant?: 'primary' | 'secondary' | 'white'
   className?: string
 }
 
@@ -18,125 +19,122 @@ const spin = keyframes`
   }
 `
 
+const pulse = keyframes`
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+`
+
 const SpinnerContainer = styled.div<{
   size: 'sm' | 'md' | 'lg' | 'xl'
-  color?: string
+  variant: 'primary' | 'secondary' | 'white'
 }>`
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   
   ${({ size }) => {
     switch (size) {
       case 'sm':
-        return `
-          width: 16px;
-          height: 16px;
-        `
+        return 'width: 16px; height: 16px;'
       case 'md':
-        return `
-          width: 24px;
-          height: 24px;
-        `
+        return 'width: 24px; height: 24px;'
       case 'lg':
-        return `
-          width: 32px;
-          height: 32px;
-        `
+        return 'width: 32px; height: 32px;'
       case 'xl':
-        return `
-          width: 48px;
-          height: 48px;
-        `
+        return 'width: 48px; height: 48px;'
       default:
-        return `
-          width: 24px;
-          height: 24px;
-        `
+        return 'width: 24px; height: 24px;'
     }
   }}
 `
 
 const Spinner = styled.div<{
   size: 'sm' | 'md' | 'lg' | 'xl'
-  color?: string
+  variant: 'primary' | 'secondary' | 'white'
 }>`
   width: 100%;
   height: 100%;
-  border: 2px solid transparent;
-  border-top: 2px solid ${({ color, theme }) => color || theme.colors.primary};
   border-radius: 50%;
-  animation: ${spin} 1s linear infinite;
+  border: 2px solid transparent;
   
-  ${({ size }) => {
-    switch (size) {
-      case 'sm':
-        return `border-width: 1.5px;`
-      case 'md':
-        return `border-width: 2px;`
-      case 'lg':
-        return `border-width: 3px;`
-      case 'xl':
-        return `border-width: 4px;`
+  ${({ variant, theme }) => {
+    switch (variant) {
+      case 'primary':
+        return `
+          border-top-color: ${theme.colors.primary};
+          border-right-color: ${theme.colors.primary}40;
+        `
+      case 'secondary':
+        return `
+          border-top-color: ${theme.colors.textSecondary};
+          border-right-color: ${theme.colors.textSecondary}40;
+        `
+      case 'white':
+        return `
+          border-top-color: ${theme.colors.textPrimary};
+          border-right-color: ${theme.colors.textPrimary}40;
+        `
       default:
-        return `border-width: 2px;`
+        return `
+          border-top-color: ${theme.colors.primary};
+          border-right-color: ${theme.colors.primary}40;
+        `
     }
   }}
+  
+  animation: ${spin} 1s linear infinite;
+  
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    animation: ${pulse} 2s ease-in-out infinite;
+    border-radius: 2px;
+    
+    ${({ variant, theme }) => {
+      switch (variant) {
+        case 'primary':
+          return `background-color: ${theme.colors.primary};`
+        case 'secondary':
+          return `background-color: ${theme.colors.textSecondary};`
+        case 'white':
+          return `background-color: ${theme.colors.textPrimary};`
+        default:
+          return `background-color: ${theme.colors.primary};`
+      }
+    }}
+    
+    border: none;
+  }
 `
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
-  color,
+  variant = 'primary',
   className,
-  ...props
 }) => {
   return (
-    <SpinnerContainer size={size} color={color} className={className} {...props}>
-      <Spinner size={size} color={color} />
+    <SpinnerContainer size={size} variant={variant} className={className}>
+      <Spinner size={size} variant={variant} />
     </SpinnerContainer>
   )
 }
 
-// Centered loading spinner for full-page loading
-const CenteredContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  width: 100%;
-`
-
-export const CenteredLoadingSpinner: React.FC<LoadingSpinnerProps> = (props) => (
-  <CenteredContainer>
-    <LoadingSpinner {...props} />
-  </CenteredContainer>
+// Convenience components for common use cases
+export const SmallSpinner: React.FC<Omit<LoadingSpinnerProps, 'size'>> = (props) => (
+  <LoadingSpinner size="sm" {...props} />
 )
 
-// Loading spinner with text
-const SpinnerWithTextContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing.md};
-  min-height: 200px;
-  width: 100%;
-`
+export const LargeSpinner: React.FC<Omit<LoadingSpinnerProps, 'size'>> = (props) => (
+  <LoadingSpinner size="lg" {...props} />
+)
 
-const LoadingText = styled.p`
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.fontSize.base};
-  margin: 0;
-`
+export const PrimarySpinner: React.FC<Omit<LoadingSpinnerProps, 'variant'>> = (props) => (
+  <LoadingSpinner variant="primary" {...props} />
+)
 
-export interface LoadingSpinnerWithTextProps extends LoadingSpinnerProps {
-  text?: string
-}
-
-export const LoadingSpinnerWithText: React.FC<LoadingSpinnerWithTextProps> = ({
-  text = 'Loading...',
-  ...props
-}) => (
-  <SpinnerWithTextContainer>
-    <LoadingSpinner {...props} />
-    <LoadingText>{text}</LoadingText>
-  </SpinnerWithTextContainer>
+export const WhiteSpinner: React.FC<Omit<LoadingSpinnerProps, 'variant'>> = (props) => (
+  <LoadingSpinner variant="white" {...props} />
 )

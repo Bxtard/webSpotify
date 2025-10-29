@@ -2,6 +2,7 @@
 
 import styled, { css, keyframes } from 'styled-components'
 import React from 'react'
+import { prefersReducedMotion } from '../../utils/animations'
 
 export interface LoadingSkeletonProps {
   width?: string | number
@@ -21,6 +22,24 @@ const shimmer = keyframes`
   }
 `
 
+const pulse = keyframes`
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+`
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`
+
 const SkeletonBase = styled.div<{
   width?: string | number
   height?: string | number
@@ -33,7 +52,7 @@ const SkeletonBase = styled.div<{
     ${({ theme }) => theme.colors.surface} 100%
   );
   background-size: 200px 100%;
-  animation: ${shimmer} 1.2s ease-in-out infinite;
+  animation: ${shimmer} 1.5s ease-in-out infinite, ${fadeIn} 0.3s ease-out;
   
   ${({ width }) =>
     width &&
@@ -52,6 +71,12 @@ const SkeletonBase = styled.div<{
     css`
       border-radius: ${typeof borderRadius === 'number' ? `${borderRadius}px` : borderRadius};
     `}
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    animation: ${pulse} 2s ease-in-out infinite, ${fadeIn} 0.3s ease-out;
+    background: ${({ theme }) => theme.colors.surface};
+  }
 `
 
 const TextSkeleton = styled(SkeletonBase)`
