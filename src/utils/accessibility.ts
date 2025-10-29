@@ -54,17 +54,18 @@ export class FocusManager {
     const firstElement = focusableElements[0]
     const lastElement = focusableElements[focusableElements.length - 1]
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab') return
+    const handleKeyDown = (event: Event) => {
+      const keyboardEvent = event as KeyboardEvent
+      if (keyboardEvent.key !== 'Tab') return
 
-      if (event.shiftKey) {
+      if (keyboardEvent.shiftKey) {
         if (document.activeElement === firstElement) {
-          event.preventDefault()
+          keyboardEvent.preventDefault()
           lastElement?.focus()
         }
       } else {
         if (document.activeElement === lastElement) {
-          event.preventDefault()
+          keyboardEvent.preventDefault()
           firstElement?.focus()
         }
       }

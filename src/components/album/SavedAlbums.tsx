@@ -258,7 +258,7 @@ export const SavedAlbums: React.FC = () => {
           </Title>
           <Subtitle>
             Disfruta de tu música a un solo click y descubre que<br />
-            discos has guardado dentro de "mis álbumes"
+            discos has guardado dentro de &quot;mis álbumes&quot;
           </Subtitle>
         </Header>
 
@@ -300,7 +300,7 @@ export const SavedAlbums: React.FC = () => {
         </Title>
         <Subtitle>
           Disfruta de tu música a un solo click y descubre que<br />
-          discos has guardado dentro de "mis álbumes"
+          discos has guardado dentro de &quot;mis álbumes&quot;
         </Subtitle>
       </Header>
 

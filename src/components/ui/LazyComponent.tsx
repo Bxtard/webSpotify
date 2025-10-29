@@ -205,7 +205,7 @@ export const withLazyLoading = <P extends object>(
     rootMargin?: string
   }
 ) => {
-  return (props: P) => (
+  const LazyComponentWrapper = (props: P) => (
     <LazyComponent
       importFn={importFn}
       fallback={options?.fallback}
@@ -215,4 +215,8 @@ export const withLazyLoading = <P extends object>(
       {...props}
     />
   )
+  
+  LazyComponentWrapper.displayName = 'LazyComponentWrapper'
+  
+  return LazyComponentWrapper
 }

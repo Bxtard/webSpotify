@@ -208,8 +208,8 @@ export const useLazyComponent = <T extends React.ComponentType<any>>(
     setError(null)
 
     try {
-      const module = await importFn()
-      setComponent(() => module.default)
+      const componentModule = await importFn()
+      setComponent(() => componentModule.default)
     } catch (err) {
       setError(err as Error)
     } finally {
@@ -222,7 +222,7 @@ export const useLazyComponent = <T extends React.ComponentType<any>>(
     loading,
     error,
     loadComponent,
-    LazyWrapper: React.forwardRef<HTMLDivElement, { children?: React.ReactNode }>((props, ref) => {
+    LazyWrapper: React.forwardRef<HTMLDivElement, { children?: React.ReactNode }>(function LazyWrapper(props, ref) {
       const elementRef = React.useRef<HTMLDivElement>(null)
 
       React.useEffect(() => {
@@ -251,18 +251,11 @@ export const useLazyComponent = <T extends React.ComponentType<any>>(
         }
       }, [])
 
-      return (
-        <div ref={elementRef}>
-          {Component ? (
-            <Component {...props} />
-          ) : loading ? (
-            fallback ? React.createElement(fallback) : <div>Loading...</div>
-          ) : error ? (
-            <div>Error loading component</div>
-          ) : (
-            <div>Component will load when visible</div>
-          )}
-        </div>
+      return React.createElement('div', { ref: elementRef },
+        Component ? React.createElement(Component, props) :
+        loading ? (fallback ? React.createElement(fallback) : React.createElement('div', null, 'Loading...')) :
+        error ? React.createElement('div', null, 'Error loading component') :
+        React.createElement('div', null, 'Component will load when visible')
       )
     })
   }

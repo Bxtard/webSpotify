@@ -1,14 +1,17 @@
 'use client'
 
 import styled, { css } from 'styled-components'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { animationMixins, prefersReducedMotion } from '../../utils/animations'
 
 export interface HeaderProps {
   currentPage?: 'search' | 'albums'
-  onLogout: () => void
+  onLogout?: () => void
+  showSearch?: boolean
+  onSearch?: (query: string) => void
+  searchValue?: string
+  searchLoading?: boolean
 }
 
 const HeaderContainer = styled.header`
@@ -432,7 +435,9 @@ export const Header: React.FC<HeaderProps> = ({
   }
 
   const handleLogout = () => {
-    onLogout()
+    if (onLogout) {
+      onLogout()
+    }
     setMobileMenuOpen(false)
   }
 
